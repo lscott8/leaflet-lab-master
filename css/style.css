@@ -1,0 +1,63 @@
+#menu{
+height: 50px;
+}
+
+h1{
+
+position: absolute;
+top: 0;
+left:20%;
+font-size: 30px;
+color: #000;
+
+}
+
+#map {
+    top: 50px;
+    height: 600px;
+    width: 70%;
+    display:
+    inline-block
+}
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
+#panel {
+    top: 60px;
+    width: 26%;
+    display: inline-block;
+    vertical-align: 400px;
+    text-align: center;
+    line-height: 42px;
+}
+
+.range-slider {
+    width: 50%;
+}
+
+#sequencecontrol{
+  margin: 0.2em 0;
+
+}
+form{
+  text-align:left;
+}
+
+#forward {
+    float: right
+    
+}
+
+#forward img
+
+
+#reverse {
+    float: left;
+
+}
+
+.img{
+  height: 20px;
+  width: 20px;
+}
