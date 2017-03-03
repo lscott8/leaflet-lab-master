@@ -8,7 +8,11 @@ function createMap(){
         center: [44, -115],
         zoom: 3,
         maxZoom: 6,
-        minZoom:2
+        minZoom:2,
+        maxBounds:[
+          [75,-170],
+			     [0,-30]
+        ],
     });
 
     //add tilelater.  openestreet map is used
@@ -24,6 +28,12 @@ function createMap(){
 
 //create sequence controls in the panel
 function createSequenceControls(map, attributes){
+  var SequenceControl = L.Control.extend({
+          options: {
+              position: 'bottomleft'
+          },
+        })
+
 
     //create range input element (slider)
     $('#sequencecontrol').append('<input class="range-slider" type="range">');
@@ -37,8 +47,8 @@ function createSequenceControls(map, attributes){
     //add forward/reverse buttons to the slider
     $('#sequencecontrol').append('<button class="skip" id="reverse">Reverse</button>');
     $('#sequencecontrol').append('<button class="skip" id="forward">Skip</button>');
-    //$('#reverse').html('<img src="img/reverse.png">');
-    //$('#forward').html('<img src="img/forward.png">');
+    $('#reverse').html('<img src="img/rewind.png">');
+    $('#forward').html('<img src="img/forward.png">');
 
     $('.skip').click(function(){
         //get the old index value
@@ -62,6 +72,9 @@ function createSequenceControls(map, attributes){
         updatePropSymbols(map, attributes[index]);
     });
     updatePropSymbols(map, attributes[0]);
+
+
+
 };
 
 
