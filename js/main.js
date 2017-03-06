@@ -32,28 +32,44 @@ function createSequenceControls(map, attributes){
           options: {
               position: 'bottomleft'
           },
-        })
+          onAdd: function (map) {
+            // create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            // ... initialize other DOM elements, add listeners, etc.
+            $(container).append('<input class="range-slider" type="range">');
+
+
+            $(container).append('<button class="skip" id="reverse" title="Reverse"><img src="img/rewind.png"></button>');
+            $(container).append('<button class="skip" id="forward" title="Forward"><img src="img/forward.png"></button>');
+
+            $(container).on('mousedown dblclick', function(e){
+              L.DomEvent.stopPropagation(e);
+                });
+          return container;
+        }
+      });
+
+      map.addControl(new SequenceControl());
+
+
 
 
     //create range input element (slider)
-    $('#sequencecontrol').append('<input class="range-slider" type="range">');
     //slider should have 12 steps, one for each year
+
+
     $('.range-slider').attr({
         max: 12,
         min: 0,
         value: 0,
         step: 1
     });
-    //add forward/reverse buttons to the slider
-    $('#sequencecontrol').append('<button class="skip" id="reverse">Reverse</button>');
-    $('#sequencecontrol').append('<button class="skip" id="forward">Skip</button>');
-    $('#reverse').html('<img src="img/rewind.png">');
-    $('#forward').html('<img src="img/forward.png">');
 
     $('.skip').click(function(){
         //get the old index value
         var index = $('.range-slider').val();
-        console.log(index)
+
 
         //Step 6: increment or decrement depending on button clicked
         if ($(this).attr('id') == 'forward'){
@@ -71,9 +87,11 @@ function createSequenceControls(map, attributes){
         //function call to updataPropSymbols
         updatePropSymbols(map, attributes[index]);
     });
-    updatePropSymbols(map, attributes[0]);
-
-
+    $('.range-slider').on('input', function(){
+      //Step 6: get the new index value
+      var index = $(this).val();
+    updatePropSymbols(map, attributes[index]);
+  });
 
 };
 
@@ -106,14 +124,6 @@ function updatePropSymbols(map, attribute){
 
   };
 
-  function filterAttValues(data, map, attributes){
-
-    L.geoJson(data, {
-      filter: function(feature, layer){
-        return(feature.properties[attributes[0]] > 15 && feature.properties[attributes[0]] < 20);
-  }
-  }).addTo(map);
-  };
 
 
 function processData(data){
@@ -202,7 +212,114 @@ function pointToLayer(feature, latlng, attributes){
 
 };
 
+function createLegend(map, attributes){
+    var LegendControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
 
+        onAdd: function (map) {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+            //add temporal legend div to container
+            $(container).append('<div id="temporal-legend">')
+
+            //Step 1: start attribute legend svg string
+            var svg = '<svg id="attribute-legend" width="180px" height="180px">';
+
+
+                    //array of circle names to base loop on
+                    var circles = {
+                      max: 20,
+                      mean: 40,
+                      min: 60
+};
+
+//loop to add each circle and text to svg string
+                      for (var circle in circles){
+    //circle string
+                          svg += '<circle class="legend-circle" id="' + circle + '" fill="#ff0000" fill-opacity="0.2" stroke="#000000" cx="30"/>';
+
+    //text string
+                          svg += '<text id="' + circle + '-text" x="65" y="' + circles[circle] + '"></text>';
+};
+
+        //close svg string
+        svg += "</svg>";
+
+        //add attribute legend svg to container
+        $(container).append(svg);
+
+            return container;
+        }
+    });
+
+    map.addControl(new LegendControl());
+
+    updateLegend(map, attributes[0]);
+};
+
+function getCircleValues(map, attribute){
+    //start with min at highest possible and max at lowest possible number
+    var min = Infinity,
+        max = -Infinity;
+
+    map.eachLayer(function(layer){
+        //get the attribute value
+        if (layer.feature){
+            var attributeValue = Number(layer.feature.properties[attribute]);
+
+            //test for min
+            if (attributeValue < min){
+                min = attributeValue;
+            };
+
+            //test for max
+            if (attributeValue > max){
+                max = attributeValue;
+            };
+        };
+    });
+
+    //set mean
+    var mean = (max + min) / 2;
+
+    //return values as an object
+    return {
+        max: max,
+        mean: mean,
+        min: min
+    };
+};
+
+//Example 3.7 line 1...Update the legend with new attribute
+function updateLegend(map, attribute){
+    //create content for legend
+    var year = attribute;
+    currentAttribute = year;
+    var content = "Obesity Rate in " + year;
+
+    //replace legend content
+    $('#temporal-legend').html(content);
+
+    //get the max, mean, and min values as an object
+
+    var circleValues = getCircleValues(map, attribute);
+
+    for (var key in circleValues){
+        //get the radius
+        var radius = calcPropRadius(circleValues[key]);
+
+        $('#'+key).attr({
+            cy: 59 - radius,
+            r: radius
+        });
+
+        //Step 4: add legend text
+        $('#'+key+'-text').text(Math.round(circleValues[key]*100)/100 + "%");
+    };
+  }
 //Import GeoJSON data
 function getData(map){
 
@@ -213,11 +330,13 @@ function getData(map){
           var attributes = processData(response);
           createPropSymbols(response, map, attributes);
           createSequenceControls(map, attributes);
+          createLegend(map, attributes);
 
 
         }
     });
 };
+
 
 
 //function to retrieve the data and place it on the map
