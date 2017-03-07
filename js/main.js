@@ -120,9 +120,12 @@ function updatePropSymbols(map, attribute){
           offset: new L.Point(0,-radius)
         });
       };
+      updateLegend(map, attribute)
     });
+updateLegend(map, attribute);
 
-  };
+};
+
 
 
 
@@ -155,7 +158,7 @@ function createPropSymbols(data, map, attributes){
     }
     }).addTo(map)
 $("input[type=radio]").on('click',function(){
-  var range = $(this).val()
+  var range = $(this).val();
   var rangearray = range.split("-");
   minvalue = Number(rangearray[0]),
   maxvalue = Number(rangearray[1])
@@ -171,6 +174,7 @@ $("input[type=radio]").on('click',function(){
     }
   })
 })
+
 };
 
 
